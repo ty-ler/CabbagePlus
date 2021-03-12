@@ -1,1 +1,0 @@
-ALTER TABLE `itemstatuses` MODIFY COLUMN `itemID` int(10) UNSIGNED    NOT NULL;
