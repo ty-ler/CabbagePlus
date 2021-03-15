@@ -5,6 +5,7 @@ import orsc.enumerations.MessageTab;
 import orsc.graphics.two.Fonts;
 import orsc.multiclient.ClientPort;
 import orsc.util.GenUtil;
+import cabbageplus.plugins.ZoomPlugin;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -369,8 +370,8 @@ public class ORSCApplet extends Applet implements MouseListener, MouseMotionList
 			final int zoomIncrement = 10;
 			int zoomAmount = e.getWheelRotation() * zoomIncrement;
 			int newZoom = C_LAST_ZOOM + zoomAmount;
-			// Keep C_LAST_ZOOM aka the zoom increments on the range of [0, 255]
-			if (newZoom >= 0 && newZoom <= 255) {
+			// Keep C_LAST_ZOOM aka the zoom increments on the range of [0, max distance from zoom plugin]
+			if (newZoom >= 0 && newZoom <= ZoomPlugin.getMaxZoomDistance()) {
 				C_LAST_ZOOM = newZoom;
 			}
 		}

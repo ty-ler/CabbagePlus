@@ -4,6 +4,7 @@ import orsc.enumerations.MenuItemAction;
 import orsc.graphics.two.MudClientGraphics;
 import orsc.util.ArrayUtil;
 import orsc.util.GenUtil;
+import cabbageplus.plugins.MenuPlugin;
 
 public final class Menu {
 	public int font;
@@ -406,7 +407,7 @@ public final class Menu {
 				int i;
 				for (i = 0; this.itemCount > i; ++i) {
 					MenuItem tmp = this.menuItems[i];
-					priority[i] = tmp.actionID.priority();
+					priority[i] = MenuPlugin.getMenuItemPriority(tmp);
 					src[i] = tmp;
 				}
 
@@ -417,7 +418,6 @@ public final class Menu {
 					this.menuItems[i] = (MenuItem) src[i];
 					++i;
 				}
-
 			}
 		} catch (RuntimeException var6) {
 			throw GenUtil.makeThrowable(var6, "wb.AA(" + "dummy" + ')');

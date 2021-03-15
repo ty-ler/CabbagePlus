@@ -19,7 +19,7 @@
                includeantruntime="false">
             <classpath>
                 <pathelement path="${java.class.path}/"/>
-				<pathelement location="${lib}/discord-rpc.jar"/>
+                <pathelement location="${lib}/discord-rpc.jar"/>
             </classpath>
             <compilerarg line="-Xlint:unchecked"/>
         </javac>

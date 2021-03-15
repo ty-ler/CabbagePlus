@@ -1,5 +1,6 @@
 package orsc;
 
+import cabbageplus.CabbagePlus;
 import orsc.util.Utils;
 
 import javax.swing.*;
@@ -35,6 +36,7 @@ public class OpenRSC extends ORSCApplet {
 			jframe.setLocationRelativeTo(null);
 			applet.init();
 			applet.start();
+			CabbagePlus.init();
 		} catch (HeadlessException e) {
 			e.printStackTrace();
 		}
