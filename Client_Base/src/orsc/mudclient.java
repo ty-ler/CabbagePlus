@@ -62,7 +62,7 @@ public final class mudclient implements Runnable {
 	private static int FPS = 0;
 	private static final ArrayList<String> messages = new ArrayList<String>();
 	private static int currentChat = 0;
-	private static ClientPort clientPort;
+	public static ClientPort clientPort;
 	private static final ArrayList<String> skillNameLongArray = new ArrayList<String>();
 	private static final ArrayList<String> skillNamesArray = new ArrayList<String>();
 	private static String[] skillNameLong;
@@ -634,6 +634,9 @@ public final class mudclient implements Runnable {
 	private int amountToZoom = 0;
 	private Panel panelLoginOptions;
 	private boolean worldComponentsLoaded = false;
+
+	public int proposedStyle = 0;
+	public long timeOfLastCombatStylePacket = 0;
 
 	/**
 	 * Newest RSC cache: SAME VALUES.
@@ -1475,7 +1478,7 @@ public final class mudclient implements Runnable {
 				this.lastWrite = var2;
 			}
 
-			if (-5001L > ~(var2 + -this.lastWrite)) {
+			if (-5001L > ~(var2 - this.lastWrite)) {
 				this.lastWrite = var2;
 				this.packetHandler.getClientStream().newPacket(67);
 				this.packetHandler.getClientStream().finishPacket();
@@ -1492,6 +1495,10 @@ public final class mudclient implements Runnable {
 			int len = this.packetHandler.getClientStream().readIncomingPacket(packetHandler.getPacketsIncoming());
 			if (len > 0)
 				this.packetHandler.handlePacket(packetHandler.getPacketsIncoming().getUnsignedByte(), len);
+
+			if (System.currentTimeMillis() - timeOfLastCombatStylePacket > 1000) {
+				setCombatStyle(proposedStyle);
+			}
 		} catch (RuntimeException var6) {
 			throw GenUtil.makeThrowable(var6, "client.SB(" + "dummy" + ')');
 		}
@@ -2743,6 +2750,7 @@ public final class mudclient implements Runnable {
 						&& row * 20 + sy + 20 > this.mouseY) {
 						this.mouseButtonClick = 0;
 						this.combatStyle = row - 1;
+						this.proposedStyle = this.combatStyle;
 						this.packetHandler.getClientStream().newPacket(29);
 						this.packetHandler.getClientStream().bufferBits.putByte(this.combatStyle);
 						this.packetHandler.getClientStream().finishPacket();
@@ -4581,13 +4589,21 @@ public final class mudclient implements Runnable {
 			this.mouseButtonClick = 0;
 			if (this.mouseX < 106 || this.mouseY < 150 || this.mouseX > 406 || this.mouseY > 210) {
 				this.panelPasswordChange_Mode = PasswordChangeMode.NONE;
+				if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+					clientPort.closeKeyboard();
+				}
 				return;
 			}
 		}
 
-		int y = (getGameHeight() - 60) / 2;
-		this.getSurface().drawBox((getGameWidth() - 300) / 2, (getGameHeight() - 60) / 2, 300, 60, 0);
-		this.getSurface().drawBoxBorder((getGameWidth() - 300) / 2, 300, (getGameHeight() - 60) / 2, 60, 0xFFFFFF);
+		int y;
+		if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+			y = (getGameHeight() - 60) / 2 - 70;
+		} else {
+			y = (getGameHeight() - 60) / 2;
+		}
+		this.getSurface().drawBox((getGameWidth() - 300) / 2, y, 300, 60, 0);
+		this.getSurface().drawBoxBorder((getGameWidth() - 300) / 2, 300, y, 60, 0xFFFFFF);
 		y += 22;
 		String var2;
 		int var3;
@@ -5266,6 +5282,27 @@ public final class mudclient implements Runnable {
 
 					if (S_EXPERIENCE_COUNTER_TOGGLE && C_EXPERIENCE_COUNTER == 2) {
 						this.drawExperienceCounter(recentSkill);
+					}
+
+					if (isAndroid()) {
+						int uiX = getGameWidth() - 201 - 40;
+						int uiY = 3;
+						int uiWidth = 40;
+						int uiHeight = 32;
+
+						this.getSurface().drawBoxAlpha(uiX, uiY, uiWidth, uiHeight, 0x989898, 160);
+						this.getSurface().drawString("@bla@Key-", uiX + 9, uiY + 14, 0xffffff, 1);
+						this.getSurface().drawString("@bla@board", uiX + 5, uiY + 27, 0xffffff, 1);
+						if (this.mouseButtonClick != 0) {
+							if (this.mouseX >= uiX && this.mouseX <= uiX + uiWidth && this.mouseY >= uiY && this.mouseY <= uiY + uiHeight) {
+								this.mouseButtonClick = 0;
+								if (!osConfig.F_SHOWING_KEYBOARD) {
+									clientPort.drawKeyboard();
+								} else {
+									clientPort.closeKeyboard();
+								}
+							}
+						}
 					}
 
 					if (isAndroid() && Config.S_WANT_PLAYER_COMMANDS) { // on screen buttons for various player chat commands
@@ -6435,15 +6472,20 @@ public final class mudclient implements Runnable {
 				short var5 = 400;
 				int var6 = (var2 > 0 ? 5 + var3 : 0) + 70;
 				int var7 = (getGameWidth() - var5) / 2;
-				int var8 = (getGameHeight() - var6) / 2;
-				this.getSurface().drawBox(var7, var8, var5, var6, 0);
-				this.getSurface().drawBoxBorder(var7, var5, var8, var6, 0xFFFFFF);
+				int y;
+				if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+					y = (getGameHeight() - var6) / 2 - 70;
+				} else {
+					y = (getGameHeight() - var6) / 2;
+				}
+				this.getSurface().drawBox(var7, y, var5, var6, 0);
+				this.getSurface().drawBoxBorder(var7, var5, y, var6, 0xFFFFFF);
 				this.getSurface().drawColoredStringCentered((getGameWidth() - 256) / 2 + 256 / 2, "Enter the name of the player you wish to report:",
-					0xFFFF00, 0, 1, 5 + var8 + var3);
+					0xFFFF00, 0, 1, 5 + y + var3);
 				int var9 = var3 + 2;
 				this.getSurface().drawColoredStringCentered((getGameWidth() - 256) / 2 + 256 / 2, this.inputTextCurrent + "*", 0xFFFFFF, 0, 4,
-					var4 + var8 + 5 + var9 + 3);
-				int var10 = var3 + var4 + 8 + var8 + var9 + 2;
+					var4 + y + 5 + var9 + 3);
+				int var10 = var3 + var4 + 8 + y + var9 + 2;
 				int var11 = 0xFFFFFF;
 				if (var2 > 0) {
 					String var12 = this.reportAbuse_isMute ? "[X]" : "[ ]";
@@ -6485,14 +6527,20 @@ public final class mudclient implements Runnable {
 					if (this.mouseButtonClick != 0) {
 						this.mouseButtonClick = 0;
 						this.reportAbuse_State = 0;
+						if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+							clientPort.closeKeyboard();
+						}
 					}
 				}
 
 				this.getSurface().drawString("Cancel", getGameWidth() / 2 + 8, var10, var11, 1);
-				if (this.mouseButtonClick == 1 && (this.mouseX < var7 || this.mouseX > var7 + var5 || var8 > this.mouseY
-					|| var8 + var6 < this.mouseY)) {
+				if (this.mouseButtonClick == 1 && (this.mouseX < var7 || this.mouseX > var7 + var5 || y > this.mouseY
+					|| y + var6 < this.mouseY)) {
 					this.reportAbuse_State = 0;
 					this.mouseButtonClick = 0;
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 				}
 
 			}
@@ -6513,29 +6561,45 @@ public final class mudclient implements Runnable {
 			if (this.mouseButtonClick != 0) {
 				this.mouseButtonClick = 0;
 				if (this.panelSocialPopup_Mode == SocialPopupMode.ADD_FRIEND
-					&& (this.mouseX < x || this.mouseY < y || this.mouseX > x + 300 || this.mouseY > y + 70)) {
+					&& (this.mouseX < x || this.mouseY < y || this.mouseX > 406 || this.mouseY > +70)) {
 					this.panelSocialPopup_Mode = SocialPopupMode.NONE;
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 					return;
 				}
 
 				if (this.panelSocialPopup_Mode == SocialPopupMode.MESSAGE_FRIEND
 					&& (this.mouseX < 6 || this.mouseY < y || this.mouseX > 506 || this.mouseY > +70)) {
 					this.panelSocialPopup_Mode = SocialPopupMode.NONE;
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 					return;
 				}
 
 				if (this.panelSocialPopup_Mode == SocialPopupMode.ADD_IGNORE
 					&& (this.mouseX < x || this.mouseY < y || this.mouseX > 406 || this.mouseY > +70)) {
 					this.panelSocialPopup_Mode = SocialPopupMode.NONE;
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 					return;
 				}
 
 				if (this.mouseX > x + 130 && this.mouseX < x + 270 && this.mouseY > y + 48 && this.mouseY < y + 68) {
 					this.panelSocialPopup_Mode = SocialPopupMode.NONE;
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 					return;
 				}
 			}
-			y = (getGameHeight() - 70) / 2;
+			if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+				y = (getGameHeight() - 70) / 2 - 70;
+			} else {
+				y = (getGameHeight() - 70) / 2;
+			}
 			if (this.panelSocialPopup_Mode == SocialPopupMode.ADD_FRIEND) {
 				this.getSurface().drawBox((getGameWidth() - 300) / 2, y, 300, 70, 0);
 				this.getSurface().drawBoxBorder((getGameWidth() - 300) / 2, 300, y, 70, 0xFFFFFF);
@@ -6553,6 +6617,9 @@ public final class mudclient implements Runnable {
 					if (friend.length() > 0 && !localKey.equals(StringUtil.displayNameToKey(friend))) {
 						this.addFriend(friend);
 					}
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 				}
 			}
 			if (this.panelSocialPopup_Mode == SocialPopupMode.MESSAGE_FRIEND) {
@@ -6569,6 +6636,9 @@ public final class mudclient implements Runnable {
 					this.panelSocialPopup_Mode = SocialPopupMode.NONE;
 					this.chatMessageInputCommit = "";
 					this.putStringPair(this.chatMessageTarget, var3);
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
+					}
 				}
 			}
 
@@ -6587,6 +6657,9 @@ public final class mudclient implements Runnable {
 					this.inputTextFinal = "";
 					if (ignore.length() > 0 && !localKey.equals(StringUtil.displayNameToKey(ignore))) {
 						this.addIgnore(ignore);
+					}
+					if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+						clientPort.closeKeyboard();
 					}
 				}
 			}
@@ -6985,6 +7058,10 @@ public final class mudclient implements Runnable {
 						this.drawDialogueChangePassword();
 					} else if (this.reportAbuse_State != 1) {
 						if (this.reportAbuse_State == 2) {
+							// window to select type of abuse
+							if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+								clientPort.closeKeyboard();
+							}
 							this.handleReportAbuseClick();
 						} else if (this.panelSocialPopup_Mode == SocialPopupMode.NONE) {
 							var2 = true;
@@ -6993,6 +7070,10 @@ public final class mudclient implements Runnable {
 							this.drawPopupSocial();
 						}
 					} else {
+						// pop up to enter name
+						if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+							clientPort.drawKeyboard();
+						}
 						this.drawPopupReport(false);
 					}
 				} else {
@@ -8188,6 +8269,9 @@ public final class mudclient implements Runnable {
 								this.chatMessageTarget = SocialLists.friendList[index];
 								this.chatMessageInputCommit = "";
 								this.chatMessageInput = "";
+								if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+									clientPort.drawKeyboard();
+								}
 							}
 						}
 					}
@@ -8204,6 +8288,9 @@ public final class mudclient implements Runnable {
 						this.inputTextFinal = "";
 						this.inputTextCurrent = "";
 						this.panelSocialPopup_Mode = SocialPopupMode.ADD_FRIEND;
+						if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+							clientPort.drawKeyboard();
+						}
 					}
 
 					// add ignore
@@ -8211,6 +8298,9 @@ public final class mudclient implements Runnable {
 						this.panelSocialPopup_Mode = SocialPopupMode.ADD_IGNORE;
 						this.inputTextCurrent = "";
 						this.inputTextFinal = "";
+						if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+							clientPort.drawKeyboard();
+						}
 					}
 
 					this.mouseButtonClick = 0;
@@ -9467,6 +9557,7 @@ public final class mudclient implements Runnable {
 			this.combatStyle++;
 			if (this.combatStyle == 4)
 				this.combatStyle = 0;
+			this.proposedStyle = this.combatStyle;
 			this.packetHandler.getClientStream().newPacket(29);
 			this.packetHandler.getClientStream().bufferBits.putByte(this.combatStyle);
 			this.packetHandler.getClientStream().finishPacket();
@@ -9618,6 +9709,9 @@ public final class mudclient implements Runnable {
 			this.panelPasswordChange_Mode = PasswordChangeMode.OLD_PASSWORD;
 			this.inputTextCurrent = "";
 			this.inputTextFinal = "";
+			if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+				clientPort.drawKeyboard();
+			}
 		}
 
 		// change recovery questions
@@ -10205,7 +10299,8 @@ public final class mudclient implements Runnable {
 				int xOffset = x + 5;
 				int textColour = 0xFFFFFF, textColourHovered = 0xFF0000, textColourHeading = 0xFFFF00;
 				int currentlyHoveredSkill = -1;
-				int currSkill = 0, totalXp = 0, i = 0;
+				long totalXp = 0;
+				int currSkill = 0, i = 0;
 				int leftColLength = (int) Math.floor(skillCount / 2);
 				int rightColLength = skillCount - leftColLength;
 
@@ -11281,6 +11376,9 @@ public final class mudclient implements Runnable {
 									}
 									// Add the final search argument without a plus
 									url += (args[args.length - 1]);
+									if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+										clientPort.closeKeyboard();
+									}
 									Utils.openWebpage(url);
 								} else {
 									url = "https://classic.runescape.wiki";
@@ -11601,6 +11699,9 @@ public final class mudclient implements Runnable {
 						|| this.panelPasswordChange_Mode == PasswordChangeMode.NEED_LONGER_PASSWORD
 						|| this.panelPasswordChange_Mode == PasswordChangeMode.PASSWORD_NOT_EQ_USER) {
 						this.panelPasswordChange_Mode = PasswordChangeMode.NONE;
+						if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+							clientPort.closeKeyboard();
+						}
 					}
 					if (auctionHouse.isVisible() && (auctionHouse.auctionMenu.focusOn(auctionHouse.auctionSearchHandle)
 						|| auctionHouse.myAuctions.focusOn(auctionHouse.textField_priceEach)
@@ -15359,6 +15460,8 @@ public final class mudclient implements Runnable {
 		this.combatStyle = style;
 	}
 
+	public int getCombatStyle() { return this.combatStyle; }
+
 	public void setSettingsBlockGlobal(int block) {
 		this.settingsBlockGlobal = block;
 	}
@@ -15831,12 +15934,12 @@ public final class mudclient implements Runnable {
 	}
 
 	void setExperienceArray() {
-		int experience = 0;
+		long experience = 0;
 		for (int i = 0; i < S_PLAYER_LEVEL_LIMIT; ++i) {
 			int experienceFactor = 1 + i;
-			int experienceIncrease = (int) (300D * Math.pow(2.0D, experienceFactor / 7D) + experienceFactor);
+			long experienceIncrease = (long) (300D * Math.pow(2.0D, experienceFactor / 7D) + experienceFactor);
 			experience += experienceIncrease;
-			this.experienceArray[i] = (experience & 0xffffffc) / 4;
+			this.experienceArray[i] = (int)((experience & 0xffffffffL) / 4);
 		}
 	}
 

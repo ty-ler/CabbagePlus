@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static orsc.Config.isAndroid;
+
 public class PacketHandler {
 
 	private final RSBuffer_Bits packetsIncoming = new RSBuffer_Bits(30000);
@@ -102,6 +104,7 @@ public class PacketHandler {
 		put(34, "FREEZE_EXPERIENCE_TOGGLE");
 		put(113, "SEND_IRONMAN");
 		put(115, "SEND_ON_BLACK_HOLE");
+		put(129, "COMBAT_STYLE_CHANGED");
 		put(135, "BANK_PIN_INTERFACE");
 		put(136, "ONLINE_LIST");
 		put(147, "SEND_KILLS2");
@@ -392,7 +395,12 @@ public class PacketHandler {
 			else if (opcode == 117) showSleepScreen(length);
 
 				// Not Sleeping
-			else if (opcode == 84) mc.setIsSleeping(false);
+			else if (opcode == 84) {
+				mc.setIsSleeping(false);
+				if (isAndroid() && osConfig.F_SHOWING_KEYBOARD) {
+					mc.clientPort.closeKeyboard();
+				}
+			}
 
 				// Wrong Sleep Word
 			else if (opcode == 194) mc.setSleepingStatusText("Incorrect - Please wait...");
@@ -466,6 +474,9 @@ public class PacketHandler {
 
 				//toggle experience freeze
 			else if (opcode == 34) mc.toggleExperienceFreeze(packetsIncoming.getByte());
+
+			    //sync combat style with server (needed to compensate for network errors)
+			else if (opcode == 129) gotCombatStylePacket();
 
 			else mc.closeConnection(true);
 
@@ -1467,6 +1478,12 @@ public class PacketHandler {
 		}
 	}
 
+
+	private void gotCombatStylePacket() {
+		mc.timeOfLastCombatStylePacket = System.currentTimeMillis();
+		mc.proposedStyle = packetsIncoming.getByte();
+	}
+
 	private void updateInventoryItem() {
 		int slot = packetsIncoming.getUnsignedByte();
 		int itemID = packetsIncoming.getShort();
@@ -1830,7 +1847,7 @@ public class PacketHandler {
 
 	private void loadExperience() {
 		for (int skill = 0; skill < mudclient.skillCount; ++skill) {
-			mc.setPlayerExperience(skill, packetsIncoming.get32() / 4);
+			mc.setPlayerExperience(skill, (int)((packetsIncoming.get32() & 0xffffffffL) / 4));
 		}
 	}
 
@@ -2045,7 +2062,7 @@ public class PacketHandler {
 
 	private void updateIndividualExperience() {
 		int skill = packetsIncoming.getUnsignedByte();
-		mc.setPlayerExperience(skill, packetsIncoming.get32() / 4);
+		mc.setPlayerExperience(skill, (int)((packetsIncoming.get32() & 0xffffffffL) / 4));
 	}
 
 	private void closeDuelDialog() {
@@ -2145,7 +2162,7 @@ public class PacketHandler {
 		int oldLvl = mc.getPlayerStatBase(skill);
 		mc.setPlayerStatCurrent(skill, packetsIncoming.getUnsignedByte());
 		mc.setPlayerStatBase(skill, packetsIncoming.getUnsignedByte());
-		mc.setPlayerExperience(skill, packetsIncoming.get32() / 4);
+		mc.setPlayerExperience(skill, (int)((packetsIncoming.get32() & 0xffffffffL) / 4));
 		updateExperienceTracker(skill, oldXP, oldLvl);
 
 		// Update the discord status
@@ -2269,6 +2286,10 @@ public class PacketHandler {
 		mc.getSurface().createCaptchaSprite(sprite);
 
 		mc.setSleepingStatusText(null);
+
+		if (isAndroid() && !osConfig.F_SHOWING_KEYBOARD) {
+			mc.clientPort.drawKeyboard();
+		}
 	}
 
 	private void showServerMessageDialogTwo() {
