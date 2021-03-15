@@ -19,7 +19,9 @@ public class CabbagePlus {
 
 		if(jFrame != null) {
 			CabbageMenuBar.init(jFrame);
-			settingsPanel = new PluginSettingsPanel(jFrame);
+			settingsPanel = new PluginSettingsPanel();
+
+			jFrame.add(settingsPanel, BorderLayout.LINE_END);
 
 			jFrame.setPreferredSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 			jFrame.setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));

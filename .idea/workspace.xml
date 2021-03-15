@@ -2,22 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="71958bef-0dea-46c2-9e76-8d436da768c3" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/CabbagePlus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/CabbageUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/client/gui/CabbageMenuBar.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/client/gui/prefs/PluginSettingsPanel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/plugins/AutoLoginPlugin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/plugins/MenuPlugin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/plugins/PluginHelper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/plugins/ZoomPlugin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/reflection/Reflector.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/src/orsc/ORSCApplet.java" beforeDir="false" afterPath="$PROJECT_DIR$/Client/src/orsc/ORSCApplet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client/src/orsc/OpenRSC.java" beforeDir="false" afterPath="$PROJECT_DIR$/Client/src/orsc/OpenRSC.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client_Base/Cache/discord_inuse.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/Cache/discord_inuse.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client_Base/build.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/build.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client_Base/manifest.mf" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/manifest.mf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Client_Base/src/orsc/graphics/gui/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/src/orsc/graphics/gui/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client_Base/src/cabbageplus/CabbagePlus.java" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/CabbagePlus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Client_Base/src/cabbageplus/client/gui/prefs/PluginSettingsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/Client_Base/src/cabbageplus/client/gui/prefs/PluginSettingsPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
